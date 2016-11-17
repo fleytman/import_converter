@@ -54,19 +54,36 @@ First-String-Read=true
 
     # Алгоритм работает для одного документа на импорт, не обрабатывает случая наличия путсых строк
     i = 0
-    for line in lines[2:]:
-        data = line.split("=", 1)
-        dict_file.write(data[0] + "=" + "${" + str(i) + "}" + "\n")
-        # экранирование символа '"' в ячейки и самой ячейки этим символом
-        csv_data = '"' + data[1][:-2].replace('"', '""') + '"' + delimiter
+    num_docs = 0
+    before_line = ""
+    for line in lines[1:]:
 
-        csv_file.write(csv_data)
+        if line == "\r\n":
+            if before_line != "\r\n":
+                num_docs += 1
+                if num_docs > 1:
+                    print("На данный момент нет поддержки нескольких документов в файле импорта, будет конвертирован только первый документ в файле %s.txt" % name)
+                    break
+        else:
+            data = line.split("=", 1)
+            if len(data) == 1:
+                print("Строка ""%s"" некорректна в файле %s.txt и будет пропущена" % (line, name))
+                continue
+
+            dict_file.write(data[0] + "=" + "${" + str(i) + "}" + "\n")
+            # экранирование символа '"' в ячейки и самой ячейки этим символом
+            csv_data = '"' + data[1][:-2].replace('"', '""') + '"' + delimiter
+
+            csv_file.write(csv_data)
+        before_line = line
         i += 1
 
     f.close()
     dict_file.close()
     csv_file.close()
 
-
+    if lines[-1] == "\r\n":
+        num_docs -= 1
+    print(num_docs)
 if __name__ == '__main__':
     main()

@@ -89,18 +89,25 @@ First-String-Read=true
             # экранирование символа '"' в ячейки и самой ячейки этим символом
             csv[data[0]].append('"' + data[1][:-2].replace('"', '""') + '"' + delimiter)
 
-            # dict_file.write(data[0] + "=" + "${" + str(i) + "}" + "\n")
-            # # экранирование символа '"' в ячейки и самой ячейки этим символом
-            # csv_data = '"' + data[1][:-2].replace('"', '""') + '"' + delimiter
-            #
-            # csv_file.write(csv_data)
-
         i += 1
         before_line = line
 
     for v in csv:
         if len(csv[v]) < num_docs:
             csv[v].append("\"\";")
+
+    i=0
+    for v in csv:
+        dict_file.write(v + "=" + "${" + str(i) + "}" + "\n")
+        i += 1
+
+    # csv_data = '"' + data[1][:-2].replace('"', '""') + '"' + delimiter
+    #
+    # csv_file.write(csv_data)
+
+
+
+
 
     f.close()
     dict_file.close()

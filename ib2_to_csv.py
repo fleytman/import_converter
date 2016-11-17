@@ -32,14 +32,13 @@ def main():
 
 
 def converter(name, folder_out, folder_out_dct):
+    delimiter = ';'
     f = codecs.open('in/' + name + '.txt', 'r', "cp1251")
     lines = f.readlines()
-    print(lines)
 
     # f = open('in/' + name + '.txt', 'r')
     #
     # lines = f.readlines()
-    print(lines[0][:-1])
     before_text1 = lines[0][:-1]
 
     dict_file = open(folder_out_dct + "/" + name + "." + "dct", 'w')
@@ -53,16 +52,15 @@ First-String-Read=true
     dict_file.write(before_text1)
     dict_file.write(before_text2)
 
+    # Алгоритм работает для одного документа на импорт, не обрабатывает случая наличия путсых строк
     i = 0
     for line in lines[2:]:
         data = line.split("=", 1)
         dict_file.write(data[0] + "=" + "${" + str(i) + "}" + "\n")
+        # экранирование символа '"' в ячейки и самой ячейки этим символом
+        csv_data = '"' + data[1][:-2].replace('"', '""') + '"' + delimiter
 
-        if data[1].find('"') != -1:
-            csv_data = '"' + data[1][:-2].replace('"', '""') + '"' + ";"
-            csv_file.write(csv_data)
-        else:
-            csv_file.write(data[1][:-2] + ";")
+        csv_file.write(csv_data)
         i += 1
 
     f.close()

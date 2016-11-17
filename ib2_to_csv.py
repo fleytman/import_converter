@@ -52,30 +52,42 @@ First-String-Read=true
     dict_file.write(before_text1)
     dict_file.write(before_text2)
 
-    # Алгоритм работает для одного документа на импорт, не обрабатывает случая наличия путсых строк
     i = 0
     num_docs = 0
     before_line = ""
     csv = {}
+
+    # Костыль. Следует переписать так, чтобы алгорим отрабатывал без пустой строки в конце списка.
+    if lines[-1] != "\r\n":
+        lines.append(lines.pop()+"\r\n")
+    else:
+        print(lines)
+
     for line in lines[1:]:
 
+        # Документы разделяются 1 или множеством путсых строк.
         if line == "\r\n":
             if before_line != "\r\n":
                 num_docs += 1
-                # if num_docs > 1:
-                #     print("На данный момент нет поддержки нескольких документов в файле импорта, будет конвертирован только первый документ в файле \"%s.txt\"." % name)
-                #     break
+
+                #Если в документе не было параметров от предыдущих документов, их стоит заполнить пустым значением
+                for v in csv:
+                    if len(csv[v]) < num_docs-1:
+                        csv[v].append("\"\";")
+
         else:
             data = line.split("=", 1)
             if len(data) == 1:
                 print("Строка:\n\"%s\"\nв файле \"%s.txt\" не содержит разделитель '=' и будет пропущена." % (line[:-2], name))
                 continue
 
+            # Если в новом документе есть новый параметр, то стоит заполнить пустыми значениями параметр для предыдущих документов
             if not csv.get(data[0]):
                 csv.update({data[0]: []})
+                while len(csv[data[0]])+1 < num_docs:
+                    csv[data[0]].append("\"\";")
+            # экранирование символа '"' в ячейки и самой ячейки этим символом
             csv[data[0]].append('"' + data[1][:-2].replace('"', '""') + '"' + delimiter)
-
-
 
             # dict_file.write(data[0] + "=" + "${" + str(i) + "}" + "\n")
             # # экранирование символа '"' в ячейки и самой ячейки этим символом
@@ -83,23 +95,12 @@ First-String-Read=true
             #
             # csv_file.write(csv_data)
 
-        # if lines[-1] == "\r\n":
-        #     num_docs -= 1
-
-        for v in csv:
-
-            if len(csv[v]) < num_docs:
-                # print(i)
-                # print(str(num_docs) + "        " + str(len(csv[v])))
-                # print(csv[v])
-                csv[v].append("\"\";")
-                # print(csv[v])
         i += 1
-
-
-
         before_line = line
 
+    for v in csv:
+        if len(csv[v]) < num_docs:
+            csv[v].append("\"\";")
 
     f.close()
     dict_file.close()

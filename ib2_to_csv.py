@@ -56,34 +56,57 @@ First-String-Read=true
     i = 0
     num_docs = 0
     before_line = ""
+    csv = {}
     for line in lines[1:]:
 
         if line == "\r\n":
             if before_line != "\r\n":
                 num_docs += 1
-                if num_docs > 1:
-                    print("На данный момент нет поддержки нескольких документов в файле импорта, будет конвертирован только первый документ в файле %s.txt" % name)
-                    break
+                # if num_docs > 1:
+                #     print("На данный момент нет поддержки нескольких документов в файле импорта, будет конвертирован только первый документ в файле \"%s.txt\"." % name)
+                #     break
         else:
             data = line.split("=", 1)
             if len(data) == 1:
-                print("Строка ""%s"" некорректна в файле %s.txt и будет пропущена" % (line, name))
+                print("Строка:\n\"%s\"\nв файле \"%s.txt\" не содержит разделитель '=' и будет пропущена." % (line[:-2], name))
                 continue
 
-            dict_file.write(data[0] + "=" + "${" + str(i) + "}" + "\n")
-            # экранирование символа '"' в ячейки и самой ячейки этим символом
-            csv_data = '"' + data[1][:-2].replace('"', '""') + '"' + delimiter
+            if not csv.get(data[0]):
+                csv.update({data[0]: []})
+            csv[data[0]].append('"' + data[1][:-2].replace('"', '""') + '"' + delimiter)
 
-            csv_file.write(csv_data)
-        before_line = line
+
+
+            # dict_file.write(data[0] + "=" + "${" + str(i) + "}" + "\n")
+            # # экранирование символа '"' в ячейки и самой ячейки этим символом
+            # csv_data = '"' + data[1][:-2].replace('"', '""') + '"' + delimiter
+            #
+            # csv_file.write(csv_data)
+
+        # if lines[-1] == "\r\n":
+        #     num_docs -= 1
+
+        for v in csv:
+
+            if len(csv[v]) < num_docs:
+                # print(i)
+                # print(str(num_docs) + "        " + str(len(csv[v])))
+                # print(csv[v])
+                csv[v].append("\"\";")
+                # print(csv[v])
         i += 1
+
+
+
+        before_line = line
+
 
     f.close()
     dict_file.close()
     csv_file.close()
+    print(csv)
 
-    if lines[-1] == "\r\n":
-        num_docs -= 1
+
     print(num_docs)
 if __name__ == '__main__':
     main()

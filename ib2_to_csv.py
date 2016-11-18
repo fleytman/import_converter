@@ -36,9 +36,6 @@ def converter(name, folder_out, folder_out_dct):
     f = codecs.open('in/' + name + '.txt', 'r', "cp1251")
     lines = f.readlines()
 
-    # f = open('in/' + name + '.txt', 'r')
-    #
-    # lines = f.readlines()
     before_text1 = lines[0][:-1]
 
     dict_file = open(folder_out_dct + "/" + name + "." + "dct", 'w')
@@ -68,7 +65,7 @@ First-String-Read=true
             if before_line != "\r\n":
                 num_docs += 1
 
-                #Если в документе не было параметров от предыдущих документов, их стоит заполнить пустым значением
+                # Если в документе не было параметров от предыдущих документов, их стоит заполнить пустым значением
                 for v in csv:
                     if len(csv[v]) < num_docs-1:
                         csv[v].append("\"\";")
@@ -76,7 +73,8 @@ First-String-Read=true
         else:
             data = line.split("=", 1)
             if len(data) == 1:
-                print("Строка:\n\"%s\"\nв файле \"%s.txt\" не содержит разделитель '=' и будет пропущена." % (line[:-2], name))
+                print("Строка:\n\"%s\"\nв файле \"%s.txt\" не содержит разделитель '=' и будет пропущена." %
+                      (line[:-2], name))
                 continue
 
             # Если в новом документе есть новый параметр, то стоит заполнить пустыми значениями параметр для предыдущих документов
@@ -110,7 +108,7 @@ First-String-Read=true
     while i < num_docs:
         csv_data = "".join(values_list[i-1][:-1])+"\n"
         csv_file.write(csv_data)
-        i+=1
+        i += 1
 
     f.close()
     dict_file.close()

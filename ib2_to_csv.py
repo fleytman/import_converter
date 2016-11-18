@@ -60,8 +60,6 @@ First-String-Read=true
     # Костыль. Следует переписать так, чтобы алгорим отрабатывал без пустой строки в конце списка.
     if lines[-1] != "\r\n":
         lines.append(lines.pop()+"\r\n")
-    else:
-        print(lines)
 
     for line in lines[1:]:
 
@@ -86,35 +84,37 @@ First-String-Read=true
                 csv.update({data[0]: []})
                 while len(csv[data[0]])+1 < num_docs:
                     csv[data[0]].append("\"\";")
-            # экранирование символа '"' в ячейки и самой ячейки этим символом
+            # Экранирование символа '"' в ячейки и самой ячейки этим символом
             csv[data[0]].append('"' + data[1][:-2].replace('"', '""') + '"' + delimiter)
 
         i += 1
         before_line = line
-
+    # Если в документе нет значения для параметра, заполнить пустым значением
     for v in csv:
         if len(csv[v]) < num_docs:
             csv[v].append("\"\";")
-
-    i=0
+    i = 0
     for v in csv:
         dict_file.write(v + "=" + "${" + str(i) + "}" + "\n")
         i += 1
-
-    # csv_data = '"' + data[1][:-2].replace('"', '""') + '"' + delimiter
-    #
-    # csv_file.write(csv_data)
-
-
-
-
+    # Список с пуcтыми списками количеством равным количеству документов
+    values_list = [[] for x in range(num_docs)]
+    # Каждый список равен строке
+    for t in csv:
+        i = 0
+        while i < len(csv[t]):
+            values_list[i].append(csv[t][i])
+            i += 1
+    i=0
+    # Запись в csv построчно
+    while i < num_docs:
+        csv_data = "".join(values_list[i-1][:-1])+"\n"
+        csv_file.write(csv_data)
+        i+=1
 
     f.close()
     dict_file.close()
     csv_file.close()
-    print(csv)
 
-
-    print(num_docs)
 if __name__ == '__main__':
     main()

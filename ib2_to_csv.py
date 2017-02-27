@@ -1,7 +1,7 @@
 import os
 import codecs
 from sys import platform as _platform
-
+from collections import OrderedDict
 
 def main():
     """Конвертер файлов импорта формата ibank2 в формат CSV"""
@@ -53,6 +53,7 @@ First-String-Read=true
     num_docs = 0
     before_line = ""
     csv = {}
+    csv = OrderedDict(csv)
 
     # Костыль. Следует переписать так, чтобы алгорим отрабатывал без пустой строки в конце списка.
     if lines[-1] != "\r\n":
@@ -68,7 +69,7 @@ First-String-Read=true
                 # Если в документе не было параметров от предыдущих документов, их стоит заполнить пустым значением
                 for v in csv:
                     if len(csv[v]) < num_docs-1:
-                        csv[v].append("\"\";")
+                        csv[v].append("\"\""+delimiter)
 
         else:
             data = line.split("=", 1)
@@ -81,7 +82,7 @@ First-String-Read=true
             if not csv.get(data[0]):
                 csv.update({data[0]: []})
                 while len(csv[data[0]])+1 < num_docs:
-                    csv[data[0]].append("\"\";")
+                    csv[data[0]].append("\"\""+delimiter)
             # Экранирование символа '"' в ячейки и самой ячейки этим символом
             csv[data[0]].append('"' + data[1][:-2].replace('"', '""') + '"' + delimiter)
 
@@ -90,7 +91,7 @@ First-String-Read=true
     # Если в документе нет значения для параметра, заполнить пустым значением
     for v in csv:
         if len(csv[v]) < num_docs:
-            csv[v].append("\"\";")
+            csv[v].append("\"\""+delimiter)
     i = 0
     for v in csv:
         dict_file.write(v + "=" + "${" + str(i) + "}" + "\n")
@@ -108,7 +109,7 @@ First-String-Read=true
     while i < num_docs:
         csv_data = "".join(values_list[i-1][:-1])+"\n"
         csv_file.write(csv_data)
-        i += 1
+        i+=1
 
     f.close()
     dict_file.close()

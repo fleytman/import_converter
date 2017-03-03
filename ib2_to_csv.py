@@ -8,12 +8,12 @@ def main():
     folder_in = 'in'
     folder_out = 'out'
     folder_out_dct = folder_out + "/dct"
-    if not os.path.exists("out"):
+    if not os.path.exists(folder_out):
         os.mkdir(folder_out)
-    if not os.path.exists("out/dct"):
+    if not os.path.exists(folder_out_dct):
         os.mkdir(folder_out_dct)
 
-    files = os.listdir(folder_in)
+    files = [f for f in os.listdir(folder_in) if os.path.isfile(folder_in + "/" +f)]
 
     for fl in files:
         path_to_file = os.path.join(folder_in, fl)

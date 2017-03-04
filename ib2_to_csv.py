@@ -3,11 +3,15 @@ import codecs
 from sys import platform as _platform
 from collections import OrderedDict
 
+
 def main():
     """Конвертер файлов импорта формата ibank2 в формат CSV"""
     folder_in = 'in'
     folder_out = 'out'
     folder_out_dct = folder_out + "/dct"
+
+    delimiter = ';'
+
     if not os.path.exists(folder_out):
         os.mkdir(folder_out)
     if not os.path.exists(folder_out_dct):
@@ -16,10 +20,9 @@ def main():
     files = [f for f in os.listdir(folder_in) if os.path.isfile(folder_in + "/" +f)]
 
     for fl in files:
-        path_to_file = os.path.join(folder_in, fl)
         name, extension_in = fl.rsplit('.', 1)
         if extension_in == "txt":
-            converter(name, folder_out, folder_out_dct)
+            converter(name, folder_out, folder_out_dct, delimiter)
 
     # Открыть в проводнике ОС
     if _platform == "linux" or _platform == "linux2":
@@ -31,8 +34,7 @@ def main():
         os.startfile(folder_out)
 
 
-def converter(name, folder_out, folder_out_dct):
-    delimiter = ';'
+def converter(name, folder_out, folder_out_dct, delimiter):
     f = codecs.open('in/' + name + '.txt', 'r', "cp1251")
     lines = f.readlines()
 

@@ -1,15 +1,8 @@
 Content-Type=doc/payment
 
 
-
-NUM_DOC=
-PAYMENT_TYPE=почтой
-PAYER_INN=4654647987
+DATE_DOC=13.11.2010
 PAYER_NAME=ОрганизацияТест Д.У.
 
-
-
-DATE_DOC=17.11.2016
-NUM_DOC=
-RRR=3
+4=9
 

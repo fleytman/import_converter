@@ -1,7 +1,7 @@
+import configparser
 import os
 import codecs
 from sys import platform as _platform
-from collections import OrderedDict
 import dbf
 import csv
 
@@ -9,44 +9,54 @@ import csv
 def main():
     """Конвертер файлов импорта формата csv в формат dbf"""
     folder_in = 'in/csv'
-    folder_in_dct = folder_in + "/dct"
+    folder_in_dct = "%s/dct" % folder_in
     folder_out = 'out/dbf'
-    folder_out_dct = folder_out + "/dct"
+    folder_out_dct = "%s/dct" % folder_out
 
-    delimiter = ';'
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    if config.get("csv_to_dbf", "delimiter") == ";":
+        delimiter = ';'
+    elif config.get("csv_to_dbf", "delimiter") == ",":
+        delimiter = ','
+    elif config.get("csv_to_dbf", "delimiter") == "tab":
+        delimiter = '\t'
+    else:
+        print("Разделитель в файле config.ini не указан. Разделителем будет ';'")
+        delimiter = ';'
 
     if not os.path.exists(folder_out):
         os.makedirs(folder_out)
     if not os.path.exists(folder_out_dct):
         os.makedirs(folder_out_dct)
 
-    files = [f for f in os.listdir(folder_in) if os.path.isfile(folder_in + "/" +f)]
+    files = [f for f in os.listdir(folder_in) if os.path.isfile("%s/%s" % (folder_in, f))]
 
     for fl in files:
         name, extension_in = fl.rsplit('.', 1)
 
         # Проверка, что файл имеет расширение csv и наличие словаря к файлу
-        if extension_in == "csv" and os.path.isfile(folder_in_dct + "/" + name + ".dct"):
-            reader = csv.reader(open(folder_in+ "/" + name + "." + extension_in), delimiter=delimiter, quotechar='"')
+        if extension_in == "csv" and os.path.isfile("%s/%s.dct" % (folder_in_dct, name)):
+            reader = csv.reader(open('%s/%s.%s' % (folder_in, name, extension_in)), delimiter=delimiter, quotechar='"')
             # Замена разделителя на запятую(требуется для работы from_csv)
-            with(open(folder_out + "/" + 'output.csv', 'w', newline="")) as infile:
+            with(open("%s/output.csv" % folder_out, 'w', newline="")) as infile:
                 writer = csv.writer(infile, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
                 for row in reader:
                     if row:
                         writer.writerow(row)
             # Удаление пустых строк
-            with(codecs.open(folder_out + "/" + 'output.csv', 'r', "cp1251")) as infile:
-                with(codecs.open(folder_out + "/" + 'output2.csv', 'w', "cp1251")) as infile2:
+            with(codecs.open("%s/output.csv" % folder_out, 'r', "cp1251")) as infile:
+                with(codecs.open("%s/output2.csv" % folder_out, 'w', "cp1251")) as infile2:
                     infile2.write(infile.read().rstrip())
 
-            csvfile = folder_out + '/output2.csv'
-            dbf_outfile = folder_out + "/" + name + ".dbf"
-            dctfile = folder_in_dct + "/" + name + ".dct"
-            dct_outfile = folder_out_dct + "/" + name + ".dct"
+            csvfile = "%s/output2.csv" % folder_out
+            dbf_outfile = "%s/%s.dbf" % (folder_out, name)
+            dctfile = "%s/%s.dct" % (folder_in_dct, name)
+            dct_outfile = "%s/%s.dct" % (folder_out_dct, name)
 
             converter(csvfile, dctfile, dbf_outfile, dct_outfile)
-            os.remove(folder_out + "/" + 'output.csv')
-            os.remove(folder_out + "/" + 'output2.csv')
+            os.remove("%s/output.csv" % folder_out)
+            os.remove("%s/output2.csv" % folder_out)
 
     # Открыть в проводнике ОС
     if _platform == "linux" or _platform == "linux2":
@@ -62,7 +72,6 @@ def converter(csvfile, dctfile, dbf_outfile, dct_outfile):
     print(csvfile)
 
     some_table = from_csv(csvfile=csvfile, encoding="cp1251", to_disk=False, filename=dbf_outfile, field_names=None, extra_fields=None, dbf_type="db3", memo_size=64, min_field_size=1)
-    #os.remove(dbf_outfile[:-4] + ".dbt")
 
     with(codecs.open(dctfile, 'r', "cp1251")) as infile:
         with(codecs.open(dct_outfile, 'w', "cp1251")) as outfile:

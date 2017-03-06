@@ -1,4 +1,5 @@
-Content-Type=doc/paymentData-Type=dct
+Content-Type=doc/payment
+Data-Type=dct
 Import-Format=csv
 First-String-Read=true
 

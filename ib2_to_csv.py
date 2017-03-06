@@ -1,3 +1,4 @@
+import configparser
 import os
 import codecs
 from sys import platform as _platform
@@ -10,7 +11,22 @@ def main():
     folder_out = 'out/csv'
     folder_out_dct = folder_out + "/dct"
 
-    delimiter = ';'
+    config = configparser.ConfigParser()
+
+    if os.path.exists("config.ini"):
+        config.read('config.ini')
+    else:
+        print("Нет файла config.ini\nРазделителем будет ';'")
+
+    if config.get("ib2_to_csv", "delimiter") == ";":
+        delimiter = ';'
+    elif config.get("ib2_to_csv", "delimiter") == ",":
+        delimiter = ','
+    elif config.get("ib2_to_csv", "delimiter") == "tab":
+        delimiter = '\t'
+    else:
+        print("Разделитель в файле config.ini не указан. Разделителем будет ';'")
+        delimiter = ';'
 
     if not os.path.exists(folder_out):
         os.makedirs(folder_out)
@@ -35,14 +51,13 @@ def main():
 
 
 def converter(name, folder_in, folder_out, folder_out_dct, delimiter):
-    #f = codecs.open('in/' + name + '.txt', 'r', "cp1251")
     f = codecs.open("%s/%s.txt" % (folder_in, name), 'r', "cp1251")
     lines = f.readlines()
 
-    before_text1 = lines[0][:-1]
+    before_text1 = "%s\n" % lines[0].rstrip()
 
-    dict_file = open(folder_out_dct + "/" + name + "." + "dct", 'w')
-    csv_file = open(folder_out + "/" + name + "." + "csv", 'w')
+    dict_file = open("%s/%s.dct" % (folder_out_dct, name), 'w')
+    csv_file = open("%s/%s.csv" % (folder_out, name), 'w')
 
     before_text2 = '''Data-Type=dct
 Import-Format=csv
@@ -60,7 +75,7 @@ First-String-Read=true
 
     # Костыль. Следует переписать так, чтобы алгорим отрабатывал без пустой строки в конце списка.
     if lines[-1] != "\r\n":
-        lines.append(lines.pop()+"\r\n")
+        lines.append("%s\r\n" % lines.pop())
 
     for line in lines[1:]:
 
@@ -72,7 +87,7 @@ First-String-Read=true
                 # Если в документе не было параметров от предыдущих документов, их стоит заполнить пустым значением
                 for v in csv:
                     if len(csv[v]) < num_docs-1:
-                        csv[v].append("\"\""+delimiter)
+                        csv[v].append('""%s' % delimiter)
 
         else:
             data = line.split("=", 1)
@@ -85,19 +100,20 @@ First-String-Read=true
             if not csv.get(data[0]):
                 csv.update({data[0]: []})
                 while len(csv[data[0]])+1 < num_docs:
-                    csv[data[0]].append("\"\""+delimiter)
+                    csv[data[0]].append('""%s' % delimiter)
             # Экранирование символа '"' в ячейки и самой ячейки этим символом
-            csv[data[0]].append('"' + data[1][:-2].replace('"', '""') + '"' + delimiter)
+            csv[data[0]].append('"%s"%s' % (data[1][:-2].replace('"', '""'), delimiter))
 
         i += 1
         before_line = line
     # Если в документе нет значения для параметра, заполнить пустым значением
     for v in csv:
         if len(csv[v]) < num_docs:
-            csv[v].append("\"\""+delimiter)
+            csv[v].append('""%s' % delimiter)
     i = 0
     for v in csv:
         dict_file.write(v + "=" + "${" + str(i) + "}" + "\n")
+        dict_file.write('%s=${%s}\n' % (v, str(i)))
         i += 1
     # Список с пуcтыми списками количеством равным количеству документов
     values_list = [[] for x in range(num_docs)]

@@ -6,23 +6,23 @@ from collections import OrderedDict
 
 def main():
     """Конвертер файлов импорта формата ibank2 в формат CSV"""
-    folder_in = 'in'
-    folder_out = 'out'
+    folder_in = 'in/ibank2'
+    folder_out = 'out/csv'
     folder_out_dct = folder_out + "/dct"
 
     delimiter = ';'
 
     if not os.path.exists(folder_out):
-        os.mkdir(folder_out)
+        os.makedirs(folder_out)
     if not os.path.exists(folder_out_dct):
-        os.mkdir(folder_out_dct)
+        os.makedirs(folder_out_dct)
 
     files = [f for f in os.listdir(folder_in) if os.path.isfile(folder_in + "/" +f)]
 
     for fl in files:
         name, extension_in = fl.rsplit('.', 1)
         if extension_in == "txt":
-            converter(name, folder_out, folder_out_dct, delimiter)
+            converter(name, folder_in, folder_out, folder_out_dct, delimiter)
 
     # Открыть в проводнике ОС
     if _platform == "linux" or _platform == "linux2":
@@ -31,11 +31,12 @@ def main():
     elif _platform == "darwin":
         os.system('open "%s"' % folder_out)
     elif _platform == "win32":
-        os.startfile(folder_out)
+        os.startfile(folder_out.replace("/", "\\"))
 
 
-def converter(name, folder_out, folder_out_dct, delimiter):
-    f = codecs.open('in/' + name + '.txt', 'r', "cp1251")
+def converter(name, folder_in, folder_out, folder_out_dct, delimiter):
+    #f = codecs.open('in/' + name + '.txt', 'r', "cp1251")
+    f = codecs.open("%s/%s.txt" % (folder_in, name), 'r', "cp1251")
     lines = f.readlines()
 
     before_text1 = lines[0][:-1]

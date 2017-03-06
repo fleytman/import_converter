@@ -1,8 +1,0 @@
-Content-Type=doc/payment
-
-
-DATE_DOC=13.11.2010
-PAYER_NAME=ОрганизацияТест Д.У.
-
-4=9
-
